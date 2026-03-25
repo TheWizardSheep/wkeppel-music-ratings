@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<h1>TEST VERSION 7</h1>
+	<!-- TEST VERSION 7 -->
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Music Ratings</title>
+	<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+	<header>
+		<div class="header-links">
+			<a class="header-link" href="rating-input.html">Add Rating</a>
+		</div>
+		<h1 id="page-title">Music Ratings</h1>
+		<p id="page-description">Loading ratings...</p>
+	</header>
+
+	<main class="music-shell">
+		<section class="music-panel">
+			<h2>Overview</h2>
+			<p class="music-meta" id="overview"></p>
+			<p class="status" id="status"></p>
+		</section>
+
+		<section class="music-panel">
+			<h2>Albums</h2>
+			<div class="music-grid" id="albums"></div>
+		</section>
+
+		<section class="music-panel">
+			<h2>Songs</h2>
+			<div class="music-grid" id="songs"></div>
+		</section>
+	</main>
+
+	<script>
+		console.log('Music ratings page loaded from:', window.location.href);
+		console.log('Current pathname:', window.location.pathname);
+
+		function isValidRating(entry) {
+			return entry && typeof entry === 'object' && typeof entry.type === 'string' && typeof entry.title === 'string';
+		}
+
+		function resolveCoverPath(rawPath) {
+			if (!rawPath || typeof rawPath !== 'string') {
+				return '';
+			}
+
+			const normalized = rawPath.trim();
+			if (!normalized) {
+				return '';
+			}
+
+			// Handle absolute URLs
+			if (/^https?:\/\//i.test(normalized) || normalized.startsWith('data:')) {
+				return normalized;
+			}
+
+			// Handle already-correct absolute paths
+			if (normalized.startsWith('/music/covers/')) {
+				return normalized;
+			}
+
+			// Extract just the filename from any path format
+			let filename = normalized;
+			filename = filename.replace(/^.*\//, ''); // Remove all path segments, keep only filename
+
+			const resolvedPath = '/music/covers/' + filename;
+			console.log('resolveCoverPath:', rawPath, '→', resolvedPath);
+			return resolvedPath;
+		}
+
+		async function fetchRatingByFile(fileName) {
+			const candidates = fileName.includes('/') ? [fileName] : [fileName, 'ratings/' + fileName];
+
+			for (const candidate of candidates) {
+				try {
+					const response = await fetch(candidate);
+					if (response.ok) {
+						const data = await response.json();
+						if (isValidRating(data)) {
+							data.__fileName = fileName;
+							return data;
+						}
+					}
+				} catch (error) {
+					// Try next path candidate.
+				}
+			}
+
+			return null;
+		}
+
+		function makeCard(item) {
+			const wrapper = document.createElement('div');
+			wrapper.className = 'rating-entry';
+
+			const card = document.createElement('article');
+			card.className = 'rating-card';
+
+			const content = document.createElement('div');
+			content.className = 'rating-content';
+
+			if (item.coverImage) {
+				card.classList.add('has-cover');
+				const coverLink = document.createElement('a');
+				coverLink.className = 'cover-link';
+				coverLink.href = 'rating-detail.html?file=' + encodeURIComponent(item.__fileName || '');
+				coverLink.setAttribute('aria-label', 'Open details for ' + item.title);
+
+				const cover = document.createElement('img');
+				cover.className = 'rating-cover';
+				cover.loading = 'lazy';
+				cover.alt = 'Cover art for ' + item.title;
+				cover.src = resolveCoverPath(item.coverImage);
+				coverLink.appendChild(cover);
+				card.appendChild(coverLink);
+			}
+
+			const title = document.createElement('h3');
+			title.className = 'title';
+
+			const titleLink = document.createElement('a');
+			titleLink.href = 'rating-detail.html?file=' + encodeURIComponent(item.__fileName || '');
+			titleLink.setAttribute('aria-label', 'Open details for ' + item.title);
+			titleLink.style.textDecoration = 'none';
+			titleLink.style.color = 'inherit';
+			titleLink.textContent = item.title + ' ';
+
+			const byline = document.createElement('span');
+			byline.className = 'artist';
+			byline.textContent = 'by ' + (item.artist || 'Unknown Artist');
+			titleLink.appendChild(byline);
+			title.appendChild(titleLink);
+			content.appendChild(title);
+
+			const meta = document.createElement('p');
+			meta.className = 'meta-data';
+			meta.textContent = (item.year || 'Year N/A') + ' | ' + (item.genre || 'Genre N/A');
+			content.appendChild(meta);
+
+			const stars = document.createElement('p');
+			stars.className = 'stars';
+			stars.textContent = 'Rating: ' + (item.rating);
+			content.appendChild(stars);
+
+			card.appendChild(content);
+			wrapper.appendChild(card);
+
+			return wrapper;
+		}
+
+		async function loadRatings() {
+			console.log('Loading ratings from:', window.location.origin);
+			const status = document.getElementById('status');
+			const albumsEl = document.getElementById('albums');
+			const songsEl = document.getElementById('songs');
+
+			try {
+				const response = await fetch('ratings-index.json');
+				if (!response.ok) {
+					throw new Error('Could not load ratings index');
+				}
+
+				const indexData = await response.json();
+				const fileList = Array.isArray(indexData.files) ? indexData.files : [];
+
+				const ratings = (await Promise.all(fileList.map(fetchRatingByFile))).filter(Boolean);
+
+				document.getElementById('page-title').textContent = indexData.meta?.title || 'Music Ratings';
+				document.getElementById('page-description').textContent = indexData.meta?.description || 'Album and song ratings';
+				document.getElementById('overview').textContent =
+					'Last Updated: ' + (indexData.meta?.lastUpdated || 'N/A') +
+					' | Total Entries: ' + ratings.length;
+
+				const albums = ratings.filter(function (entry) { return entry.type === 'album'; });
+				const songs = ratings.filter(function (entry) { return entry.type === 'song'; });
+
+				albums.forEach(function (entry) { albumsEl.appendChild(makeCard(entry)); });
+				songs.forEach(function (entry) { songsEl.appendChild(makeCard(entry)); });
+
+				status.textContent = 'Loaded ' + ratings.length + ' ratings.';
+				console.log('Successfully loaded ratings:', ratings.length);
+			} catch (error) {
+				console.error('Error loading ratings:', error);
+				status.textContent = 'Unable to load ratings data. Run a local server and try again.';
+			}
+		}
+
+		loadRatings();
+	</script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rating Detail</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a class="back-link" href="music.html">Back to Ratings</a>
+
+  <header>
+    <h1 id="detail-title">Rating Detail</h1>
+    <p id="detail-subtitle">Loading selected rating...</p>
+  </header>
+
+  <main class="music-shell">
+    <section class="music-panel" id="detail-panel">
+      <p class="status" id="detail-status"></p>
+      <div class="rating-detail-layout is-hidden" id="detail-layout">
+        <img id="detail-cover" class="detail-cover" alt="Cover art">
+        <div class="detail-content" id="detail-content"></div>
+      </div>
+      <div class="detail-notes-block is-hidden" id="detail-notes-block">
+        <h2>Notes</h2>
+        <p class="detail-notes" id="detail-notes"></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function getFileParam() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('file') || '';
+    }
+
+    async function fetchRatingByFile(fileName) {
+      const candidates = fileName.includes('/') ? [fileName] : [fileName, 'ratings/' + fileName];
+
+      for (const candidate of candidates) {
+        try {
+          const response = await fetch(candidate);
+          if (response.ok) {
+            return response.json();
+          }
+        } catch (error) {
+          // Try next candidate path.
+        }
+      }
+
+      return null;
+    }
+
+    function addLine(container, label, value) {
+      const row = document.createElement('p');
+      row.className = 'detail-line';
+      row.textContent = label + ': ' + (value || 'N/A');
+      container.appendChild(row);
+    }
+
+    async function loadDetail() {
+      const fileName = getFileParam();
+      const status = document.getElementById('detail-status');
+      const layout = document.getElementById('detail-layout');
+      const content = document.getElementById('detail-content');
+      const cover = document.getElementById('detail-cover');
+      const notesBlock = document.getElementById('detail-notes-block');
+      const notesEl = document.getElementById('detail-notes');
+
+      if (!fileName) {
+        status.textContent = 'No rating selected.';
+        return;
+      }
+
+      const entry = await fetchRatingByFile(fileName);
+      if (!entry || !entry.title) {
+        status.textContent = 'Could not load this rating.';
+        return;
+      }
+
+      document.getElementById('detail-title').textContent = entry.title;
+      document.getElementById('detail-subtitle').textContent = (entry.artist || 'Unknown Artist') + ' (' + (entry.year || 'N/A') + ')';
+
+      const coverPath = entry.coverImage
+        ? (entry.coverImage.startsWith('covers/') ? entry.coverImage : 'covers/' + entry.coverImage)
+        : '';
+
+      if (coverPath) {
+        cover.src = coverPath;
+        cover.alt = 'Cover art for ' + entry.title;
+      } else {
+        cover.remove();
+      }
+
+      addLine(content, 'Type', entry.type);
+      addLine(content, 'Artist', entry.artist);
+      addLine(content, 'Title', entry.title);
+      addLine(content, 'Year', String(entry.year || ''));
+      addLine(content, 'Genre', entry.genre);
+      addLine(content, 'Rating', String(entry.rating || '') + ' / 10');
+      addLine(content, 'Favorite Track', entry.favoriteTrack);
+      addLine(content, 'Updated', entry.updatedAt);
+      addLine(content, 'Release MBID', entry.releaseMbid);
+      addLine(content, 'Cover File', entry.coverImage);
+      addLine(content, 'Rating File', fileName);
+
+      notesEl.textContent = entry.notes || 'None yet.';
+
+      status.textContent = '';
+      layout.classList.remove('is-hidden');
+      notesBlock.classList.remove('is-hidden');
+    }
+
+    loadDetail();
+  </script>
+</body>
+</html>
