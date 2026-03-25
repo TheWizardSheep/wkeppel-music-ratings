@@ -9,7 +9,7 @@
 <body>
 	<header>
 		<div class="header-links">
-			<a class="header-link" href="music/rating-input.html">Add Rating</a>
+			<a class="header-link" href="rating-input.html">Add Rating</a>
 		</div>
 		<h1 id="page-title">Music Ratings</h1>
 		<p id="page-description">Loading ratings...</p>
@@ -57,7 +57,7 @@
 			}
 
 			// Handle already-correct absolute paths
-			if (normalized.startsWith('/music/covers/')) {
+			if (normalized.startsWith('/covers/')) {
 				return normalized;
 			}
 
@@ -65,7 +65,7 @@
 			let filename = normalized;
 			filename = filename.replace(/^.*\//, ''); // Remove all path segments, keep only filename
 
-			const resolvedPath = '/music/covers/' + filename;
+			const resolvedPath = '/covers/' + filename;
 			console.log('resolveCoverPath:', rawPath, '→', resolvedPath);
 			return resolvedPath;
 		}
@@ -105,7 +105,7 @@
 				card.classList.add('has-cover');
 				const coverLink = document.createElement('a');
 				coverLink.className = 'cover-link';
-				coverLink.href = 'music/rating-detail.html?file=' + encodeURIComponent(item.__fileName || '');
+				coverLink.href = 'rating-detail.html?file=' + encodeURIComponent(item.__fileName || '');
 				coverLink.setAttribute('aria-label', 'Open details for ' + item.title);
 
 				const cover = document.createElement('img');
@@ -121,7 +121,7 @@
 			title.className = 'title';
 
 			const titleLink = document.createElement('a');
-			titleLink.href = 'music/rating-detail.html?file=' + encodeURIComponent(item.__fileName || '');
+			titleLink.href = 'rating-detail.html?file=' + encodeURIComponent(item.__fileName || '');
 			titleLink.setAttribute('aria-label', 'Open details for ' + item.title);
 			titleLink.style.textDecoration = 'none';
 			titleLink.style.color = 'inherit';
@@ -157,7 +157,7 @@
 			const songsEl = document.getElementById('songs');
 
 			try {
-			 const response = await fetch('music/ratings-index.json');
+			 const response = await fetch('ratings-index.json');
 				if (!response.ok) {
 					throw new Error('Could not load ratings index');
 				}
