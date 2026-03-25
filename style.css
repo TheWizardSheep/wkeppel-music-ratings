@@ -1,0 +1,497 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', 'Helvetica', system-ui, sans-serif;
+    line-height: 1.6;
+    color: #f1faee;
+    background-color: #0e0e0e;
+    background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='2' /%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    position: relative;
+}
+
+/* Header Styles */
+header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #0e0e0e 100%);
+    color: #f1faee;
+    padding: 2rem 0;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(230, 57, 70, 0.15);
+    border-bottom: 2px solid #e63946;
+    position: relative;
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='headerNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='3' /%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23headerNoise)' opacity='0.02'/%3E%3C/svg%3E");
+    pointer-events: none;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    color: #e63946;
+    transform: skewX(-2deg);
+    position: relative;
+    z-index: 1;
+}
+
+header p {
+    font-size: 1.1rem;
+    opacity: 0.8;
+    color: #a8dadc;
+    position: relative;
+    z-index: 1;
+}
+
+.back-link {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 8px 14px;
+  border-radius: 3px;
+
+  background: #e63946;
+  color: #f1faee;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+
+  box-shadow: 0 8px 16px rgba(230, 57, 70, 0.4);
+  opacity: 0.9;
+
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  transform: rotate(-1deg);
+}
+
+.back-link:hover {
+  opacity: 1;
+  transform: rotate(-1deg) translateY(-2px);
+}
+
+.back-link:active {
+  transform: rotate(-1deg) translateY(0);
+}
+
+.header-links {
+        position: absolute;
+        top: 25%;
+        right: 8px;
+        transform: translateY(-50%);
+
+        display: inline-flex;
+        align-items: center;
+        z-index: 9999;
+}
+
+.header-link {
+        display: inline-flex;
+        align-items: right;
+        gap: 6px;
+
+        padding: 8px 14px;
+        border-radius: 3px;
+
+        background: #457b9d;
+        color: #f1faee;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 600;
+
+        box-shadow: 0 8px 16px rgba(69, 123, 157, 0.3);
+        opacity: 0.9;
+
+        transition: opacity 0.15s ease, transform 0.15s ease;
+        transform: rotate(1deg);
+}
+
+.header-link:hover {
+    opacity: 1;
+    transform: rotate(1deg) translateY(-2px);
+}
+
+.header-link:active {
+    transform: rotate(1deg) translateY(0);
+}
+
+/* Music Ratings Page */
+.music-shell {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.music-panel {
+    background: #1a1a1a;
+    border-radius: 4px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(230, 57, 70, 0.2);
+    position: relative;
+    margin-left: -4px;
+    margin-right: 2px;
+}
+
+.music-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='panelNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' seed='4' /%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23panelNoise)' opacity='0.02'/%3E%3C/svg%3E");
+    border-radius: 4px;
+    pointer-events: none;
+}
+
+.music-panel h2 {
+    font-family: 'Caveat', cursive;
+    font-weight: 700;
+    color: #e63946;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+    transform: skewX(-1deg);
+}
+
+.music-meta {
+    color: #a8dadc;
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+    position: relative;
+    z-index: 1;
+}
+
+.music-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.rating-card {
+    border: 1px solid #e4e4e4;
+    border-radius: 8px;
+    padding: 0.9rem;
+    background: #fafafa;
+}
+
+.rating-card.has-cover {
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr);
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.rating-content {
+    min-width: 0;
+}
+
+.rating-cover {
+    width: 130px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 6px;
+    border: 1px solid #dedede;
+    background: #f0f0f0;
+}
+
+.cover-link {
+    display: inline-block;
+    line-height: 0;
+}
+
+.cover-link:focus-visible {
+    outline: 2px solid #2f4c96;
+    outline-offset: 3px;
+    border-radius: 8px;
+}
+
+.rating-card h3 {
+    margin-bottom: 0.2rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.title {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.artist {
+    font-weight: 500;
+    font-style: italic;
+    color: #666;
+    font-size: 0.92em;
+}
+
+.rating-card p {
+    margin-bottom: 0.35rem;
+    font-size: 0.95rem;
+}
+
+.meta-data {
+    margin: 0.1rem 0 0.35rem;
+    color: #666;
+    font-size: 0.93rem;
+}
+
+.stars {
+    margin: 0;
+    color: #1f3f84;
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+.rating-pill {
+    display: inline-block;
+    margin-top: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 999px;
+    background: #e8f0ff;
+    color: #2f4c96;
+    font-weight: 600;
+    font-size: 0.88rem;
+}
+
+.status {
+    margin-top: 1rem;
+    color: #555;
+    font-size: 0.95rem;
+}
+
+.rating-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 1.1rem;
+    align-items: start;
+}
+
+.detail-cover {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #dadada;
+    background: #f2f2f2;
+}
+
+.detail-content {
+    min-width: 0;
+}
+
+.detail-line {
+    margin-bottom: 0.45rem;
+    font-size: 0.96rem;
+}
+
+.detail-notes-block {
+    margin-top: 1rem;
+    border-top: 1px solid #ececec;
+    padding-top: 0.9rem;
+}
+
+.detail-notes-block h2 {
+    margin-bottom: 0.45rem;
+    font-size: 1.05rem;
+    color: #333;
+}
+
+.detail-notes {
+    margin: 0;
+    color: #444;
+    font-size: 0.96rem;
+    white-space: pre-wrap;
+}
+
+/* Rating Input Page */
+.is-hidden {
+    display: none;
+}
+
+.rating-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.form-input {
+    width: 100%;
+    border: 1px solid #cfcfcf;
+    border-radius: 8px;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #fff;
+}
+
+.form-textarea {
+    resize: vertical;
+}
+
+.action-button {
+    margin-top: 0.55rem;
+    border: none;
+    border-radius: 8px;
+    padding: 0.62rem 0.9rem;
+    background: #2f4c96;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.action-button:hover {
+    background: #213f83;
+}
+
+.button-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.45rem;
+}
+
+.output-title {
+    margin-top: 1.3rem;
+    color: #667eea;
+}
+
+.search-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.search-toggle {
+    display: inline-flex;
+    gap: 0.4rem;
+    margin-bottom: 0.7rem;
+}
+
+.toggle-button {
+    border: 1px solid #c8d3f0;
+    border-radius: 999px;
+    background: #fff;
+    color: #2f4c96;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.toggle-button.is-active {
+    background: #2f4c96;
+    color: #fff;
+    border-color: #2f4c96;
+}
+
+.search-row .action-button {
+    margin-top: 0;
+    white-space: nowrap;
+}
+
+.search-results {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0.7rem 0 1rem;
+}
+
+.search-pagination {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+}
+
+.search-pagination .action-button {
+    margin-top: 0;
+}
+
+.search-pagination .action-button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.pagination-status {
+    font-size: 0.92rem;
+    color: #444;
+    font-weight: 600;
+}
+
+.search-result-item {
+    border: 1px solid #d8d8d8;
+    background: #fff;
+    border-radius: 8px;
+    padding: 0.58rem 0.7rem;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.93rem;
+}
+
+.search-result-item:hover {
+    border-color: #2f4c96;
+    background: #f2f6ff;
+}
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    .rating-card.has-cover {
+        grid-template-columns: 1fr;
+    }
+
+    .rating-cover {
+        width: 100%;
+        max-width: 260px;
+        margin-bottom: 0.45rem;
+    }
+
+    .rating-detail-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 700px) {
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-pagination {
+        flex-wrap: wrap;
+    }
+}
