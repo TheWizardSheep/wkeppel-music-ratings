@@ -111,7 +111,6 @@
         lowlightsBlock.classList.remove('is-hidden');
       }
 
-      addLine(content, 'Type', entry.type);
       addLine(content, 'Artist', entry.artist);
       addLine(content, 'Title', entry.title);
       addLine(content, 'Year', String(entry.year || ''));
@@ -119,9 +118,6 @@
       addLine(content, 'Rating', String(entry.rating || '') + ' / 10');
       addLine(content, 'Favorite Track', entry.favoriteTrack);
       addLine(content, 'Updated', entry.updatedAt);
-      addLine(content, 'Release MBID', entry.releaseMbid);
-      addLine(content, 'Cover File', entry.coverImage);
-      addLine(content, 'Rating File', fileName);
 
       notesEl.textContent = entry.notes || 'None yet.';
 
