@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating Input - Archive</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a class="back-link" href="music.html">Back to Music</a>
+
+    <header>
+        <h1>Rating Input (Archive)</h1>
+        <p>Password-gated editor for new album/song ratings (Archived Version)</p>
+    </header>
+
+    <main class="music-shell">
+        <section class="music-panel" id="gate-panel">
+            <h2>Unlock Editor</h2>
+            <p class="music-meta">Please input a valid password to access the editor.</p>
+            <label class="form-label" for="password">Password</label>
+            <input class="form-input" type="password" id="password" placeholder="Enter password">
+            <button class="action-button" id="unlock-btn" type="button">Unlock</button>
+            <p class="status" id="gate-status"></p>
+        </section>
+
+        <section class="music-panel is-hidden" id="editor-panel">
+            <h2>New Rating</h2>
+            <h3 class="output-title">Search MusicBrainz</h3>
+            <div class="search-toggle" role="group" aria-label="Search type">
+                <button class="toggle-button is-active" id="search-type-album" type="button" data-search-type="album">Albums</button>
+                <button class="toggle-button" id="search-type-song" type="button" data-search-type="song">Songs</button>
+            </div>
+            <div class="search-row">
+                <input class="form-input" id="search-query" placeholder="Search album or song name">
+                <button class="action-button" id="search-btn" type="button">Search</button>
+            </div>
+            <p class="music-meta">Pick a result to auto-fill title, artist, and year.</p>
+            <p class="status" id="search-status"></p>
+            <div id="search-results" class="search-results"></div>
+            <div class="search-pagination">
+                <button class="action-button" id="search-prev" type="button" disabled>Previous</button>
+                <span class="pagination-status" id="search-page-status">Page 1</span>
+                <button class="action-button" id="search-next" type="button" disabled>Next</button>
+            </div>
+
+            <form id="rating-form" class="rating-form">
+                <label class="form-label" for="type">Type</label>
+                <select class="form-input" id="type" required>
+                    <option value="album">Album</option>
+                    <option value="song">Song</option>
+                </select>
+
+                <label class="form-label" for="artist">Artist</label>
+                <input class="form-input" id="artist" required>
+
+                <label class="form-label" for="title">Title</label>
+                <input class="form-input" id="title" required>
+
+                <label class="form-label" for="year">Year</label>
+                <input class="form-input" id="year" type="number" min="1900" max="2100" required>
+
+                <label class="form-label" for="genre">Genre</label>
+                <input class="form-input" id="genre" required>
+
+                <label class="form-label" for="rating">Rating</label>
+                <input class="form-input" id="rating" type="number" min="0" max="10" step="0.1" required>
+
+                <label class="form-label" for="favoriteTrack">Favorite Track (albums optional)</label>
+                <input class="form-input" id="favoriteTrack">
+
+                <label class="form-label" for="notes">Notes</label>
+                <textarea class="form-input form-textarea" id="notes" rows="4"></textarea>
+
+                <button class="action-button" type="submit">Save Rating</button>
+            </form>
+
+            <h3 class="output-title">Saved Rating JSON</h3>
+            <textarea class="form-input form-textarea" id="entry-output" rows="10" readonly></textarea>
+            <div class="button-row">
+                <button class="action-button" id="copy-entry" type="button">Copy Entry</button>
+                <button class="action-button" id="download-rating" type="button">Download New Rating File</button>
+                <button class="action-button" id="download-cover" type="button">Download Matching Cover File</button>
+                <button class="action-button" id="download-index" type="button">Download Updated Index File</button>
+            </div>
+            <p class="status" id="editor-status"></p>
+        </section>
+    </main>
+
+    <script>
+        // Change this to your own private password before publishing.
+        const INPUT_PASSWORD = 'will.keppel13';
+
+        const gatePanel = document.getElementById('gate-panel');
+        const editorPanel = document.getElementById('editor-panel');
+        const gateStatus = document.getElementById('gate-status');
+        const editorStatus = document.getElementById('editor-status');
+        const entryOutput = document.getElementById('entry-output');
+        const searchStatus = document.getElementById('search-status');
+        const searchResults = document.getElementById('search-results');
+        const searchPageStatus = document.getElementById('search-page-status');
+        const searchPrevButton = document.getElementById('search-prev');
+        const searchNextButton = document.getElementById('search-next');
+
+        const searchTypeButtons = {
+            album: document.getElementById('search-type-album'),
+            song: document.getElementById('search-type-song')
+        };
+
+        let currentIndexData = null;
+        let generatedEntry = null;
+        let generatedFileName = '';
+        let selectedReleaseMbid = '';
+        let currentSearchType = 'album';
+        let currentSearchPage = 1;
+        let lastSearchQuery = '';
+        let lastTotalResults = 0;
+        const SEARCH_PAGE_SIZE = 10;
+
+        async function loadRatingsIndex() {
+            const response = await fetch('music/ratings-index.json');
+            if (!response.ok) {
+                throw new Error('Failed to load ratings index');
+            }
+            currentIndexData = await response.json();
+            if (!Array.isArray(currentIndexData.files)) {
+                throw new Error('Invalid ratings index format');
+            }
+        }
+
+        function today() {
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return now.getFullYear() + '-' + month + '-' + day;
+        }
+
+        function parseYear(dateValue) {
+            if (!dateValue || typeof dateValue !== 'string') {
+                return '';
+            }
+            const year = Number(dateValue.slice(0, 4));
+            return Number.isNaN(year) ? '' : year;
+        }
+
+        function getArtistName(artistCredit) {
+            if (!Array.isArray(artistCredit) || artistCredit.length === 0) {
+                return 'Unknown Artist';
+            }
+            return artistCredit
+                .map(function (credit) {
+                    return credit.artist ? credit.artist.name : '';
+                })
+                .join(' ');
+        }
+
+        function applySelectedResult(result) {
+            document.getElementById('type').value = result.type;
+            document.getElementById('artist').value = result.artist;
+            document.getElementById('title').value = result.title;
+            document.getElementById('year').value = result.year || '';
+            document.getElementById('genre').value = result.genre || '';
+            selectedReleaseMbid = result.releaseMbid || '';
+            if (result.type === 'album') {
+                document.getElementById('favoriteTrack').value = result.favoriteTrack || '';
+            }
+            searchStatus.textContent = 'Selected: ' + result.title + ' by ' + result.artist + '.';
+        }
+
+        function setSearchType(type) {
+            currentSearchType = type === 'song' ? 'song' : 'album';
+            searchTypeButtons.album.classList.toggle('is-active', currentSearchType === 'album');
+            searchTypeButtons.song.classList.toggle('is-active', currentSearchType === 'song');
+            document.getElementById('type').value = currentSearchType;
+        }
+
+        function updatePaginationStatus(resultCount) {
+            const totalPages = lastTotalResults > 0
+                ? Math.ceil(lastTotalResults / SEARCH_PAGE_SIZE)
+                : 1;
+
+            searchPageStatus.textContent = 'Page ' + currentSearchPage + ' of ' + totalPages;
+            searchPrevButton.disabled = currentSearchPage <= 1;
+
+            if (lastTotalResults > 0) {
+                searchNextButton.disabled = currentSearchPage >= totalPages;
+            } else {
+                searchNextButton.disabled = true;
+            }
+        }
+
+        function renderSearchResults(results) {
+            searchResults.innerHTML = '';
+            if (!results.length) {
+                searchStatus.textContent = 'No results found.';
+                return;
+            }
+
+            const fragment = document.createDocumentFragment();
+            results.forEach(function (result) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'search-result-button';
+                button.textContent = result.title + ' by ' + result.artist + ' (' + result.year + ')';
+                button.addEventListener('click', function () {
+                    applySelectedResult(result);
+                });
+                fragment.appendChild(button);
+            });
+            searchResults.appendChild(fragment);
+            searchStatus.textContent = 'Select a result to fill the form.';
+        }
+
+        async function searchMusicBrainz(page) {
+            const targetPage = typeof page === 'number' ? page : 1;
+            const query = document.getElementById('search-query').value.trim();
+
+            if (!query) {
+                searchStatus.textContent = 'Please enter a search term.';
+                searchResults.innerHTML = '';
+                return;
+            }
+
+            currentSearchPage = Math.max(1, targetPage);
+            lastSearchQuery = query;
+            searchStatus.textContent = 'Searching MusicBrainz...';
+            searchResults.innerHTML = '';
+
+            try {
+                const searchType = currentSearchType === 'song' ? 'recording' : 'release';
+                const offset = (currentSearchPage - 1) * SEARCH_PAGE_SIZE;
+                const url = 'https://musicbrainz.org/ws/2/' + searchType + '?query=' + encodeURIComponent(query) +
+                    '&limit=' + SEARCH_PAGE_SIZE + '&offset=' + offset + '&fmt=json';
+
+                const response = await fetch(url, {
+                    headers: { Accept: 'application/json' }
+                });
+
+                const data = await response.json();
+                lastTotalResults = data.count || 0;
+
+                const items = currentSearchType === 'song' ? (data.recordings || []) : (data.releases || []);
+                const mapped = items.map(function (item) {
+                    const dateValue = currentSearchType === 'song' ? item['first-release-date'] : item.date;
+                    return {
+                        type: currentSearchType,
+                        title: item.title,
+                        artist: getArtistName(item['artist-credit']),
+                        year: parseYear(dateValue),
+                        releaseMbid: item.id
+                    };
+                });
+
+                renderSearchResults(mapped);
+                updatePaginationStatus(mapped.length);
+            } catch (error) {
+                searchStatus.textContent = 'Search failed: ' + error.message;
+            }
+        }
+
+        function buildEntry(form) {
+            const type = form.type.value;
+            return {
+                type: type,
+                artist: form.artist.value,
+                title: form.title.value,
+                year: parseInt(form.year.value),
+                genre: form.genre.value,
+                rating: parseFloat(form.rating.value),
+                favoriteTrack: type === 'album' ? form.favoriteTrack.value : undefined,
+                notes: form.notes.value,
+                createdAt: today(),
+                updatedAt: today(),
+                releaseMbid: selectedReleaseMbid
+            };
+        }
+
+        function slugify(value) {
+            return value
+                .toLowerCase()
+                .replace(/\s+/g, '-')
+                .replace(/[^\w\-]/g, '')
+                .replace(/\-+/g, '-')
+                .replace(/^\-+|\-+$/g, '');
+        }
+
+        function buildFileName(entry) {
+            const type = entry.type === 'album' ? 'album' : 'song';
+            const artistPart = slugify(entry.artist || 'unknown-artist');
+            const titlePart = slugify(entry.title || 'untitled');
+            const datePart = entry.updatedAt.replace(/-/g, '');
+            return type + '-' + artistPart + '-' + titlePart + '-' + datePart + '.json';
+        }
+
+        async function fetchCoverImageInfo(releaseMbid) {
+            const infoUrl = 'https://coverartarchive.org/release/' + encodeURIComponent(releaseMbid);
+            const response = await fetch(infoUrl, { headers: { Accept: 'application/json' } });
+            if (!response.ok) {
+                throw new Error('No cover art found for this release');
+            }
+
+            const data = await response.json();
+            const images = Array.isArray(data.images) ? data.images : [];
+            const preferred = images.find(function (img) { return img.front; }) || images[0];
+            if (!preferred || !preferred.image) {
+                throw new Error('No cover image available');
+            }
+
+            const imageResponse = await fetch(preferred.image);
+            if (!imageResponse.ok) {
+                throw new Error('Failed to fetch cover image');
+            }
+
+            const blob = await imageResponse.blob();
+            let extension = '.jpg';
+            const imageUrl = preferred.image.toLowerCase();
+            if (imageUrl.endsWith('.png')) {
+                extension = '.png';
+            } else if (imageUrl.endsWith('.webp')) {
+                extension = '.webp';
+            }
+
+            return {
+                blob: blob,
+                extension: extension
+            };
+        }
+
+        document.getElementById('unlock-btn').addEventListener('click', async function () {
+            const password = document.getElementById('password').value;
+            if (password !== INPUT_PASSWORD) {
+                gateStatus.textContent = 'Incorrect password.';
+                return;
+            }
+
+            try {
+                await loadRatingsIndex();
+                gatePanel.classList.add('is-hidden');
+                editorPanel.classList.remove('is-hidden');
+                editorStatus.textContent = 'Editor unlocked. Generate one rating file, then download it and the updated index file.';
+            } catch (error) {
+                gateStatus.textContent = 'Error: ' + error.message;
+            }
+        });
+
+        document.getElementById('rating-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            generatedEntry = buildEntry(event.target);
+            generatedFileName = buildFileName(generatedEntry);
+            generatedEntry.coverImage = generatedFileName.replace(/\.json$/, '.jpg');
+            entryOutput.value = JSON.stringify(generatedEntry, null, 2);
+            editorStatus.textContent = 'Saved rating as ' + generatedFileName + '. Download the rating file and updated index file.';
+        });
+
+        document.getElementById('search-btn').addEventListener('click', function () {
+            searchMusicBrainz(1);
+        });
+
+        document.getElementById('search-query').addEventListener('keydown', function (event) {
+            if (event.key === 'Enter') {
+                searchMusicBrainz(1);
+            }
+        });
+
+        searchTypeButtons.album.addEventListener('click', function () {
+            setSearchType('album');
+            if (lastSearchQuery) {
+                searchMusicBrainz(1);
+            }
+        });
+
+        searchTypeButtons.song.addEventListener('click', function () {
+            setSearchType('song');
+            if (lastSearchQuery) {
+                searchMusicBrainz(1);
+            }
+        });
+
+        searchPrevButton.addEventListener('click', function () {
+            if (currentSearchPage > 1) {
+                searchMusicBrainz(currentSearchPage - 1);
+            }
+        });
+
+        searchNextButton.addEventListener('click', function () {
+            searchMusicBrainz(currentSearchPage + 1);
+        });
+
+        updatePaginationStatus(0);
+
+        document.getElementById('copy-entry').addEventListener('click', async function () {
+            if (!entryOutput.value) {
+                editorStatus.textContent = 'No entry to copy.';
+                return;
+            }
+
+            try {
+                await navigator.clipboard.writeText(entryOutput.value);
+                editorStatus.textContent = 'Entry copied to clipboard.';
+            } catch (error) {
+                editorStatus.textContent = 'Failed to copy: ' + error.message;
+            }
+        });
+
+        document.getElementById('download-rating').addEventListener('click', function () {
+            if (!generatedEntry) {
+                editorStatus.textContent = 'Generate a rating first.';
+                return;
+            }
+
+            const blob = new Blob([JSON.stringify(generatedEntry, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = generatedFileName || 'new-rating.json';
+            link.click();
+            URL.revokeObjectURL(link.href);
+            editorStatus.textContent = 'Downloaded new rating file: ' + (generatedFileName || 'new-rating.json') + '.';
+        });
+
+        document.getElementById('download-cover').addEventListener('click', async function () {
+            if (!generatedEntry || !generatedFileName) {
+                editorStatus.textContent = 'Generate a rating first.';
+                return;
+            }
+
+            if (!generatedEntry.releaseMbid) {
+                editorStatus.textContent = 'No MusicBrainz release ID found. Skipping cover download.';
+                return;
+            }
+
+            try {
+                const coverInfo = await fetchCoverImageInfo(generatedEntry.releaseMbid);
+                const coverFileName = generatedFileName.replace(/\.json$/, coverInfo.extension);
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(coverInfo.blob);
+                link.download = coverFileName;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                editorStatus.textContent = 'Downloaded cover file ' + coverFileName + '. Move it to the covers/ folder.';
+            } catch (error) {
+                editorStatus.textContent = 'Cover download failed: ' + error.message;
+            }
+        });
+
+        document.getElementById('download-index').addEventListener('click', function () {
+            if (!generatedEntry || !generatedFileName) {
+                editorStatus.textContent = 'Generate a rating first.';
+                return;
+            }
+
+            if (!currentIndexData) {
+                editorStatus.textContent = 'Index data not loaded. Please unlock editor again.';
+                return;
+            }
+
+            const files = currentIndexData.files.slice();
+            if (!files.includes(generatedFileName)) {
+                files.push(generatedFileName);
+            }
+
+            const updatedIndex = {
+                version: currentIndexData.version || '1.0',
+                lastUpdated: today(),
+                files: files
+            };
+
+            const blob = new Blob([JSON.stringify(updatedIndex, null, 2)], { type: 'application/json' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ratings-index.json';
+            link.click();
+            URL.revokeObjectURL(link.href);
+            editorStatus.textContent = 'Downloaded updated ratings-index.json. Replace music/ratings-index.json with it.';
+        });
+    </script>
+</body>
+</html>
