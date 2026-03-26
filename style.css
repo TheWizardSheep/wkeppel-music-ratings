@@ -96,6 +96,7 @@ header p {
 
   box-shadow: 0 8px 16px rgba(195, 208, 168, 0.45);
   opacity: 0.9;
+  z-index: 10000;
 
   transition: opacity 0.15s ease, transform 0.15s ease;
   transform: rotate(-1deg);
