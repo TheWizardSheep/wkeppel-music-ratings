@@ -355,7 +355,21 @@ header p {
 .detail-notes {
     margin: 0;
     color: var(--color-text);
-    font-size: 0.96rem;
+    font-size: 1.05rem;
+    white-space: pre-wrap;
+}
+
+.detail-highlights {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+
+.detail-lowlights {
+    margin: 0;
+    color: var(--color-text);
+    font-size: 0.9rem;
     white-space: pre-wrap;
 }
 
