@@ -2,10 +2,11 @@
   "meta": {
     "title": "Will's Music Ratings",
     "description": "Personal ratings for albums and songs. I have fun and strong opinions.",
-    "lastUpdated": "2026-03-15"
+    "lastUpdated": "2026-03-25"
   },
   "files": [
     "ratings/2am-at-paradise-cafe.json",
+    "ratings/breakfast-in-america-supertramp.json",
     "ratings/kiss-all-the-time-disco-occasionally.json",
     "ratings/sticking-with-it.json",
     "ratings/the-new-sound.json"

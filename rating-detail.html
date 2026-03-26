@@ -25,6 +25,14 @@
         <h2>Notes</h2>
         <p class="detail-notes" id="detail-notes"></p>
       </div>
+      <div class="detail-highlights-block is-hidden" id="detail-highlights-block">
+        <h2>Highlights</h2>
+          <p class="detail-highlights" id="detail-highlights"></p>
+        </div>
+        <div class="detail-lowlights-block is-hidden" id="detail-lowlights-block">
+          <h2>Lowlights</h2>
+          <p class="detail-lowlights" id="detail-lowlights"></p>
+        </div>
     </section>
   </main>
 
@@ -66,6 +74,10 @@
       const cover = document.getElementById('detail-cover');
       const notesBlock = document.getElementById('detail-notes-block');
       const notesEl = document.getElementById('detail-notes');
+      const highlightsEl = document.getElementById('detail-highlights');
+      const lowlightsEl = document.getElementById('detail-lowlights');
+      const highlightsBlock = document.getElementById('detail-highlights-block');
+      const lowlightsBlock = document.getElementById('detail-lowlights-block');
 
       if (!fileName) {
         status.textContent = 'No rating selected.';
@@ -77,7 +89,6 @@
         status.textContent = 'Could not load this rating.';
         return;
       }
-
       document.getElementById('detail-title').textContent = entry.title;
       document.getElementById('detail-subtitle').textContent = (entry.artist || 'Unknown Artist') + ' (' + (entry.year || 'N/A') + ')';
 
@@ -90,6 +101,14 @@
         cover.alt = 'Cover art for ' + entry.title;
       } else {
         cover.remove();
+      }
+      if (entry.highlights) {
+        highlightsEl.textContent = entry.highlights;
+        highlightsBlock.classList.remove('is-hidden');
+      }
+      if (entry.lowlights) {
+        lowlightsEl.textContent = entry.lowlights;
+        lowlightsBlock.classList.remove('is-hidden');
       }
 
       addLine(content, 'Type', entry.type);

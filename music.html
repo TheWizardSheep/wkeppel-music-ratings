@@ -55,16 +55,20 @@
 				return normalized;
 			}
 
-			// Handle already-correct absolute paths
-			if (normalized.startsWith('/covers/')) {
+			// Normalize any covers path to local relative path for portability.
+			if (normalized.startsWith('covers/')) {
 				return normalized;
+			}
+
+			if (normalized.startsWith('/covers/')) {
+				return normalized.replace(/^\/+/, '');
 			}
 
 			// Extract just the filename from any path format
 			let filename = normalized;
 			filename = filename.replace(/^.*\//, ''); // Remove all path segments, keep only filename
 
-			const resolvedPath = '/covers/' + filename;
+			const resolvedPath = 'covers/' + filename;
 			console.log('resolveCoverPath:', rawPath, '→', resolvedPath);
 			return resolvedPath;
 		}

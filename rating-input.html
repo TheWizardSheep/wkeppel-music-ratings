@@ -118,7 +118,7 @@
         const SEARCH_PAGE_SIZE = 10;
 
         async function loadRatingsIndex() {
-            const response = await fetch('music/ratings-index.json');
+            const response = await fetch('ratings-index.json');
             if (!response.ok) {
                 throw new Error('Unable to load ratings-index.json');
             }
@@ -324,7 +324,20 @@
 
         async function fetchCoverImageInfo(releaseMbid) {
             const infoUrl = 'https://coverartarchive.org/release/' + encodeURIComponent(releaseMbid);
-            const response = await fetch(infoUrl, { headers: { Accept: 'application/json' } });
+            let response = await fetch(infoUrl, { headers: { Accept: 'application/json' } });
+
+            // Some releases do not have artwork on the release endpoint.
+            if (!response.ok && response.status === 404) {
+                const releaseResponse = await fetch('https://musicbrainz.org/ws/2/release/' + encodeURIComponent(releaseMbid) + '?fmt=json');
+                if (releaseResponse.ok) {
+                    const releaseData = await releaseResponse.json();
+                    const groupId = releaseData['release-group']?.id;
+                    if (groupId) {
+                        response = await fetch('https://coverartarchive.org/release-group/' + encodeURIComponent(groupId), { headers: { Accept: 'application/json' } });
+                    }
+                }
+            }
+
             if (!response.ok) {
                 throw new Error('Cover art metadata request failed');
             }
@@ -491,8 +504,9 @@
             }
 
             const files = currentIndexData.files.slice();
-            if (!files.includes(generatedFileName)) {
-                files.push(generatedFileName);
+            const ratingPath = 'ratings/' + generatedFileName;
+            if (!files.includes(ratingPath)) {
+                files.push(ratingPath);
             }
 
             const updatedIndex = {
@@ -510,7 +524,7 @@
             link.download = 'ratings-index.json';
             link.click();
             URL.revokeObjectURL(link.href);
-            editorStatus.textContent = 'Downloaded updated ratings-index.json. Replace music/ratings-index.json with it.';
+            editorStatus.textContent = 'Downloaded updated ratings-index.json. Replace ratings-index.json with it.';
         });
     </script>
 </body>
