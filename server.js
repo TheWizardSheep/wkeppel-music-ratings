@@ -1,7 +1,8 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, exec } = require('child_process');
+const cron = require('node-cron');
 
 const app = express();
 app.use(express.json());
@@ -41,6 +42,23 @@ app.post('/api/suggestion', (req, res) => {
         console.error('Error:', error);
         res.json({ success: false, error: error.message });
     }
+});
+
+// Run git pull every 5 minutes
+cron.schedule('0 */1 * * *', () => {
+    console.log('🔄 Pulling latest changes from repo...');
+
+    exec('git pull', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`❌ Error: ${error.message}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`⚠️ Stderr: ${stderr}`);
+            return;
+        }
+        console.log(`✅ Git pull successful:\n${stdout}`);
+    });
 });
 
 const PORT = 3000;
