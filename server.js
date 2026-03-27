@@ -18,10 +18,10 @@ app.post('/api/suggestion', (req, res) => {
             return res.json({ success: false, error: 'Missing artist or title' });
         }
 
-        // Format as: album-Title-Artist or song-Title-Artist
-        let entry = `album-${title}-${artist}`;
+        // Format as: album-Artist-Title or song-Artist-Title
+        let entry = `album-${artist}-${title}`;
         if (type === 'song') {
-            entry = `song-${title}-${artist}`;
+            entry = `song-${artist}-${title}`;
         }
         if (notes) {
             entry += `\n  ${notes}`;
