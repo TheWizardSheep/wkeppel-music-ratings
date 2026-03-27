@@ -19,3 +19,7 @@ album-AJR-ok orchestra
 album-Imagine Dragons-night visions
 album-Billie Eilish-hit me hard and soft
 album-Charlie XCX-brat
+album-Cowboy Carter-Beyonce
+  help
+album-Cowboy Carter-Beyonce
+  help
