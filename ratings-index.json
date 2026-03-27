@@ -2,7 +2,7 @@
   "meta": {
     "title": "Will's Music Ratings",
     "description": "Personal ratings for albums and songs. I have fun and strong opinions.",
-    "lastUpdated": "2026-03-25"
+    "lastUpdated": "2026-03-27"
   },
   "files": [
     "ratings/2am-at-paradise-cafe.json",
@@ -10,6 +10,7 @@
     "ratings/gloomdivision-idkhow.json",
     "ratings/kiss-all-the-time-disco-occasionally.json",
     "ratings/sticking-with-it.json",
+    "ratings/taylor-swift-tortured-poets-department.json",
     "ratings/the-new-sound.json"
   ]
 }
