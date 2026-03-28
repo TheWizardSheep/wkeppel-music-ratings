@@ -102,15 +102,37 @@
                 return;
             }
 
-            const formatted = formatSuggestion(currentType, artist, title, notes);
-            statusMessage.textContent = 'Added to todo list!';
-            artistInput.value = '';
-            titleInput.value = '';
-            notesInput.value = '';
-            artistInput.focus();
-            setTimeout(function() {
-                statusMessage.textContent = '';
-            }, 3000);
+            // Send to backend
+            fetch('/api/suggestion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: currentType,
+                    artist: artist,
+                    title: title,
+                    notes: notes
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    statusMessage.textContent = 'Added to todo list and pushed to repo!';
+                    artistInput.value = '';
+                    titleInput.value = '';
+                    notesInput.value = '';
+                    artistInput.focus();
+                    setTimeout(function() {
+                        statusMessage.textContent = '';
+                    }, 3000);
+                } else {
+                    statusMessage.textContent = 'Error: ' + (data.error || 'Failed to add suggestion');
+                }
+            })
+            .catch(error => {
+                statusMessage.textContent = 'Error: ' + error.message;
+            });
         });
     </script>
 </body>
