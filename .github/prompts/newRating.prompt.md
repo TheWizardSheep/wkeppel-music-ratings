@@ -7,7 +7,7 @@ tools: [read, edit, search, fetch]
 # Prompt: New Album Rating
 
 ## Goal
-Create a new album rating entry with all required metadata and automatically update the ratings index to include it.
+Create a new album rating entry JSON with all required metadata and automatically update the ratings index to include it.
 
 ## Rules
 DO's:
@@ -49,7 +49,8 @@ Create a new album rating JSON file in the `/ratings` folder based on the provid
 11. **Generate a properly formatted JSON rating file** with all required fields including highlights/lowlights
 12. Create a valid kebab-case filename from the album/artist information
 13. Update the ratings-index.json to add `ratings/<new-file>.json` to the files array
-14. Provide clear feedback on what was created/updated, including API lookup results
+14. If the album exists in the `todo.txt` file, remove it from the list
+15. Provide clear feedback on what was created/updated, including API lookup results
 
 ----------------------------------------------------------------------
 
