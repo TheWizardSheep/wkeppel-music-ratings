@@ -37,6 +37,7 @@ app.post('/api/suggestion', (req, res) => {
         execSync(`git commit -m "Add suggestion: ${title} by ${artist}"`);
         execSync('git push origin main');
 
+
         res.json({ success: true, message: 'Suggestion added and pushed!' });
     } catch (error) {
         console.error('Error:', error);
